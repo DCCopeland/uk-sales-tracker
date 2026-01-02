@@ -1,4 +1,4 @@
-er <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en-GB">
 <head>
     <meta charset="UTF-8">
@@ -8,6 +8,7 @@ er <!DOCTYPE html>
         .admin-card { background: white; padding: 30px; border-radius: 10px; width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         h2 { margin-top: 0; font-size: 1.1rem; color: #333; border-bottom: 2px solid #18b1f2; padding-bottom: 10px; }
         input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; box-sizing: border-box; margin-bottom: 15px; font-size: 1rem; }
+        input[readonly] { background-color: #f0f0f0; color: #888; cursor: not-allowed; } /* Visual cue for locked field */
         button { width: 100%; padding: 12px; background: #333; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; width: 100%; margin-bottom: 10px; }
         button:hover { background: #18b1f2; }
         .view-btn { background: #f8f9fa; color: #333; border: 1px solid #ddd; }
@@ -19,15 +20,15 @@ er <!DOCTYPE html>
 <div class="admin-card">
     <h2>UK Sales Controller</h2>
     <span class="label">SECURE PASSWORD</span>
-    <input type="password" id="passInput" placeholder="Enter Password">
+    <input type="password" id="passInput" placeholder="•••••••••••••">
     
     <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
     
-    <span class="label">TARGET GOAL (£)</span>
-    <input type="number" id="goalInput" placeholder="Enter Target">
+    <span class="label">FIXED TARGET GOAL (£)</span>
+    <input type="number" id="goalInput" value="2700000" readonly>
     
     <span class="label">ACTUAL SALES (£)</span>
-    <input type="number" id="progressInput" placeholder="Enter Actual">
+    <input type="number" id="progressInput" placeholder="Enter Actual Total">
     
     <button id="btn" onclick="pushToCloud()">Push Update to Barometer</button>
     <button class="view-btn" onclick="window.location.href='viewer.html'">View Tracker (No Update)</button>
@@ -38,7 +39,7 @@ er <!DOCTYPE html>
 <script>
     const BIN_ID = '6957c521d0ea881f404f96e8';
     const API_KEY = '$2a$10$j8Whfk5hep5zzYAq.DC4tORoTu63AyetPpZUZn4OzHtbMFenOPFGa';
-    const SECRET_PASSWORD = 'L!viFC2o26'; // Set your password here
+    const SECRET_PASSWORD = 'L!viFC2o26'; 
 
     async function pushToCloud() {
         const pass = document.getElementById('passInput').value;
@@ -53,8 +54,8 @@ er <!DOCTYPE html>
             return;
         }
 
-        if (!goalVal || !actualVal) {
-            msg.innerText = "⚠️ Please enter values";
+        if (!actualVal) {
+            msg.innerText = "⚠️ Please enter actual sales";
             msg.style.color = "orange";
             return;
         }
@@ -79,7 +80,7 @@ er <!DOCTYPE html>
             if(response.ok) {
                 msg.innerText = "✅ Success! Redirecting...";
                 msg.style.color = "green";
-                setTimeout(() => { window.location.href = 'viewer.html'; }, 2000); //
+                setTimeout(() => { window.location.href = 'viewer.html'; }, 2000);
             } else {
                 throw new Error('API Error');
             }
