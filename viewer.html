@@ -11,14 +11,25 @@
         .logo-container img { width: 100%; height: auto; }
         h1 { margin: 5px 0; color: #333; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px; }
         
-        /* Layout Elements */
-        .top-total { font-size: 2.5rem; font-weight: bold; color: var(--dark-blue); margin: 15px 0 5px; }
-        .top-label { font-size: 0.8rem; text-transform: uppercase; color: #666; margin-bottom: 20px; letter-spacing: 1px; }
+        .top-total { font-size: 2.8rem; font-weight: bold; color: var(--dark-blue); margin: 15px 0 5px; }
+        .top-label { font-size: 0.8rem; text-transform: uppercase; color: #666; margin-bottom: 25px; letter-spacing: 1px; }
 
+        /* The Barometer Outer Shell */
         .thermometer-container { width: 85px; height: 380px; background: #ebebeb; margin: 0 auto; border-radius: 45px 45px 0 0; position: relative; border: 4px solid #333; overflow: hidden; }
         
-        /* Barometer Mercury */
-        .mercury-column { position: absolute; bottom: 0; width: 100%; background: linear-gradient(to top, var(--dark-blue), var(--brand-blue)); height: 0%; transition: height 2s cubic-bezier(0.17, 0.67, 0.83, 0.67); display: flex; align-items: flex-start; justify-content: center; }
+        /* The Actual Level Bar */
+        #mercuryBar { 
+            position: absolute; 
+            bottom: 0; 
+            width: 100%; 
+            background: linear-gradient(to top, var(--dark-blue), var(--brand-blue)); 
+            height: 0%; /* Base starting point */
+            transition: height 2s cubic-bezier(0.17, 0.67, 0.83, 0.67); 
+            display: flex; 
+            align-items: flex-start; 
+            justify-content: center;
+            border-top: 2px solid rgba(255,255,255,0.5); /* Helps visibility */
+        }
         
         .percentage-label { color: white; font-weight: bold; margin-top: 15px; font-size: 1.2rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.4); white-space: nowrap; }
         .bulb { width: 140px; height: 140px; background: var(--dark-blue); border-radius: 50%; margin: -70px auto 0; border: 4px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; position: relative; z-index: 2; }
@@ -36,10 +47,10 @@
     <h1>UK Livingston Sales Tracker</h1>
     
     <div id="topTotal" class="top-total">£0</div>
-    <div class="top-label">Current Revenue Achieved</div>
+    <div class="top-label">Total Revenue Achieved 2026</div>
 
     <div class="thermometer-container">
-        <div id="mercuryBar" class="mercury-column">
+        <div id="mercuryBar">
             <span id="percentText" class="percentage-label">0%</span>
         </div>
     </div>
@@ -48,7 +59,7 @@
         <span id="targetDisplay" class="target-text">£0</span>
     </div>
 
-    <div id="lastUpdated" class="timestamp">Awaiting cloud sync...</div>
+    <div id="lastUpdated" class="timestamp">Syncing with Livingston Cloud...</div>
 </div>
 
 <script>
@@ -66,12 +77,18 @@
             const percentage = (data.actual / data.goal) * 100;
             const visualHeight = percentage > 100 ? 100 : (percentage < 0 ? 0 : percentage);
 
-            // Update UI
-            document.getElementById('mercuryBar').style.height = visualHeight + '%';
-            document.getElementById('percentText').innerText = Math.round(percentage) + '%';
+            // Update Numeric Text
             document.getElementById('topTotal').innerText = '£' + data.actual.toLocaleString();
             document.getElementById('targetDisplay').innerText = '£' + data.goal.toLocaleString();
+            document.getElementById('percentText').innerText = Math.round(percentage) + '%';
             
+            // Force the Barometer Update
+            const bar = document.getElementById('mercuryBar');
+            bar.style.height = '0%'; // Reset first
+            setTimeout(() => {
+                bar.style.height = visualHeight + '%'; // Then move to target
+            }, 100);
+
             // Update Timestamp
             const now = new Date();
             document.getElementById('lastUpdated').innerText = 'Last Updated: ' + now.toLocaleDateString() + ' at ' + now.toLocaleTimeString();
@@ -84,9 +101,10 @@
 
     // Refresh every 30 seconds
     setInterval(fetchCloudData, 30000);
+    
+    // Kickstart on load
     window.onload = function() {
-        // Initial fetch with small delay to ensure DOM is ready
-        setTimeout(fetchCloudData, 500);
+        fetchCloudData();
     };
 </script>
 </body>
