@@ -11,10 +11,9 @@
         .top-total { font-size: 2.8rem; font-weight: bold; color: var(--dark-blue); margin: 15px 0 5px; }
         .top-label { font-size: 0.8rem; text-transform: uppercase; color: #666; margin-bottom: 25px; }
 
-        /* Outer container MUST have a fixed height for % children to work */
         .thermometer-container { 
             width: 85px; 
-            height: 380px; /* Fixed height is mandatory here */
+            height: 380px; 
             background: #ebebeb; 
             margin: 0 auto; 
             border-radius: 45px 45px 0 0; 
@@ -23,14 +22,13 @@
             overflow: hidden; 
         }
         
-        /* The Mercury Bar */
         #mercuryBar { 
             position: absolute; 
             bottom: 0; 
             width: 100%; 
             background: linear-gradient(to top, var(--dark-blue), var(--brand-blue)); 
-            height: 0%; /* Start at zero */
-            transition: height 2s cubic-bezier(0.17, 0.67, 0.83, 0.67); /* Smooth rising effect */
+            height: 0%; /* Initial state */
+            transition: height 2s cubic-bezier(0.17, 0.67, 0.83, 0.67); 
             display: flex; 
             align-items: flex-start; 
             justify-content: center;
@@ -60,7 +58,7 @@
         <span id="targetDisplay" style="font-size: 1.1rem; font-weight: bold;">£0</span>
     </div>
 
-    <div id="lastUpdated" class="timestamp">Connecting to Livingston Cloud</div>
+    <div id="lastUpdated" class="timestamp">Connecting to Livingston Cloud...</div>
 </div>
 
 <script>
@@ -78,17 +76,14 @@
             const percentage = (data.actual / data.goal) * 100;
             const visualHeight = Math.min(Math.max(percentage, 0), 100);
 
-            // Update text first
+            // Update text
             document.getElementById('topTotal').innerText = '£' + data.actual.toLocaleString();
             document.getElementById('targetDisplay').innerText = '£' + data.goal.toLocaleString();
             document.getElementById('percentText').innerText = Math.round(percentage) + '%';
             
-            // Apply height with a tiny delay to ensure transition triggers
+            // Update bar height - REMOVED the reset to 0%
             const bar = document.getElementById('mercuryBar');
-            bar.style.height = "0%"; // Reset
-            setTimeout(() => {
-                bar.style.height = visualHeight + "%"; // Set new height
-            }, 100);
+            bar.style.height = visualHeight + "%";
 
             const now = new Date();
             document.getElementById('lastUpdated').innerText = 'Last Updated: ' + now.toLocaleTimeString();
