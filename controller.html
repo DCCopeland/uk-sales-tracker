@@ -2,38 +2,39 @@
 <html lang="en-GB">
 <head>
     <meta charset="UTF-8">
-    <title>UK Livingston Controller</title>
+    <title>Livingston UK Sales Tracker</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .admin-card { background: white; padding: 30px; border-radius: 10px; width: 350px; }
-        h2 { margin-top: 0; border-bottom: 2px solid #18b1f2; padding-bottom: 10px; }
-        input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; box-sizing: border-box; margin-bottom: 15px; }
-        button { width: 100%; padding: 12px; background: #333; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .admin-card { background: white; padding: 30px; border-radius: 10px; width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { margin-top: 0; font-size: 1.1rem; color: #333; border-bottom: 2px solid #18b1f2; padding-bottom: 10px; }
+        input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; box-sizing: border-box; margin-bottom: 15px; font-size: 1rem; }
+        button { width: 100%; padding: 12px; background: #333; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         button:hover { background: #18b1f2; }
+        .label { font-size: 0.7rem; font-weight: bold; color: #666; margin-bottom: 5px; display: block; }
     </style>
 </head>
 <body>
 <div class="admin-card">
     <h2>UK Sales Controller</h2>
-    <label style="font-size:0.7rem; font-weight:bold; color:#666;">AUTHORISATION PASSWORD</label>
-    <input type="password" id="passInput" placeholder="Enter Password">
+    <span class="label">SECURE PASSWORD</span>
+    <input type="password" id="passInput" placeholder="••••••••">
     
-    <hr style="margin-bottom:20px; border:0; border-top:1px solid #eee;">
+    <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
     
-    <label style="font-size:0.7rem; font-weight:bold; color:#666;">TARGET GOAL (£)</label>
-    <input type="number" id="goalInput">
+    <span class="label">TARGET GOAL (£)</span>
+    <input type="number" id="goalInput" placeholder="2700000">
     
-    <label style="font-size:0.7rem; font-weight:bold; color:#666;">ACTUAL SALES (£)</label>
-    <input type="number" id="progressInput">
+    <span class="label">ACTUAL SALES (£)</span>
+    <input type="number" id="progressInput" placeholder="25000">
     
-    <button id="btn" onclick="pushToCloud()">Push to Office TV</button>
-    <p id="msg" style="text-align:center; margin-top:10px; font-weight:bold;"></p>
+    <button id="btn" onclick="pushToCloud()">Push Update to TV</button>
+    <p id="msg" style="text-align:center; margin-top:10px; font-size: 0.8rem; font-weight: bold;"></p>
 </div>
 
 <script>
     const BIN_ID = '6957c521d0ea881f404f96e8';
     const API_KEY = '$2a$10$j8Whfk5hep5zzYAq.DC4tORoTu63AyetPpZUZn4OzHtbMFenOPFGa';
-    const SECRET_PASSWORD = 'L!vingst0nFC'; // CHANGE THIS TO YOUR DESIRED PASSWORD
+    const SECRET_PASSWORD = 'L!vingst0nFC'; // Set your password here
 
     async function pushToCloud() {
         const pass = document.getElementById('passInput').value;
@@ -41,30 +42,34 @@
         const btn = document.getElementById('btn');
 
         if (pass !== SECRET_PASSWORD) {
-            msg.innerText = "❌ Incorrect Password";
+            msg.innerText = "❌ Authentication Failed";
             msg.style.color = "red";
             return;
         }
 
-        btn.innerText = "Syncing...";
+        btn.innerText = "Updating Cloud...";
         const data = {
             goal: parseFloat(document.getElementById('goalInput').value),
             actual: parseFloat(document.getElementById('progressInput').value)
         };
 
         try {
-            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
                 body: JSON.stringify(data)
             });
-            msg.innerText = "✅ Barometer Updated Successfully!";
-            msg.style.color = "green";
+            if(response.ok) {
+                msg.innerText = "✅ Successfully Pushed to UK Sales Barometer";
+                msg.style.color = "green";
+            } else {
+                throw new Error('API Error');
+            }
         } catch (e) {
-            msg.innerText = "❌ Connection Error";
+            msg.innerText = "❌ Sync Error: Check API Keys";
             msg.style.color = "red";
         }
-        btn.innerText = "Push to Sales Barometer";
+        btn.innerText = "Push Update to UK Sales Barometer";
     }
 </script>
 </body>
