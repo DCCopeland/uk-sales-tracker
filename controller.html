@@ -5,49 +5,40 @@
     <title>UK Livingston Controller</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .admin-card { background: white; padding: 30px; border-radius: 10px; width: 350px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
-        h2 { margin-top: 0; color: #333; font-size: 1.1rem; border-bottom: 2px solid #18b1f2; padding-bottom: 10px; }
-        .field { margin-bottom: 15px; }
-        label { display: block; font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; color: #666; }
-        input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
+        .admin-card { background: white; padding: 30px; border-radius: 10px; width: 350px; }
         button { width: 100%; padding: 12px; background: #18b1f2; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        button:hover { background: #1965af; }
-        .status { font-size: 0.7rem; color: green; text-align: center; margin-top: 10px; display: none; }
+        input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; box-sizing: border-box; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 <div class="admin-card">
     <h2>UK Sales Controller</h2>
-    <div class="field">
-        <label>TARGET GOAL (£)</label>
-        <input type="number" id="goalInput">
-    </div>
-    <div class="field">
-        <label>ACTUAL SALES (£)</label>
-        <input type="number" id="progressInput">
-    </div>
-    <button onclick="saveData()">Push Update to Tracker</button>
-    <div id="status" class="status">✓ Tracker Updated Successfully</div>
+    <input type="number" id="goalInput" placeholder="Target Goal">
+    <input type="number" id="progressInput" placeholder="Actual Sales">
+    <button id="btn" onclick="pushToCloud()">Push to Office TV</button>
+    <p id="msg" style="text-align:center; color:green; display:none;">Updated!</p>
 </div>
 
 <script>
-    // Load existing data
-    window.onload = function() {
-        document.getElementById('goalInput').value = localStorage.getItem('liv_goal') || 100000;
-        document.getElementById('progressInput').value = localStorage.getItem('liv_actual') || 0;
-    }
+    const BIN_ID = 'YOUR_BIN_ID_HERE';
+    const API_KEY = 'YOUR_API_KEY_HERE';
 
-    function saveData() {
-        const goal = document.getElementById('goalInput').value;
-        const actual = document.getElementById('progressInput').value;
-        
-        localStorage.setItem('liv_goal', goal);
-        localStorage.setItem('liv_actual', actual);
+    async function pushToCloud() {
+        const btn = document.getElementById('btn');
+        btn.innerText = "Syncing...";
+        const data = {
+            goal: parseFloat(document.getElementById('goalInput').value),
+            actual: parseFloat(document.getElementById('progressInput').value)
+        };
 
-        // Show success message
-        const status = document.getElementById('status');
-        status.style.display = 'block';
-        setTimeout(() => { status.style.display = 'none'; }, 2000);
+        await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+            body: JSON.stringify(data)
+        });
+
+        btn.innerText = "Push to Office TV";
+        document.getElementById('msg').style.display = 'block';
     }
 </script>
 </body>
