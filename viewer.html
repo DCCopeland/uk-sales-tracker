@@ -11,27 +11,32 @@
         .top-total { font-size: 2.8rem; font-weight: bold; color: var(--dark-blue); margin: 15px 0 5px; }
         .top-label { font-size: 0.8rem; text-transform: uppercase; color: #666; margin-bottom: 25px; }
 
+        /* The Container */
         .thermometer-container { 
             width: 85px; 
             height: 380px; 
             background: #ebebeb; 
             margin: 0 auto; 
             border-radius: 45px 45px 0 0; 
-            position: relative; 
+            position: relative; /* Mandatory for absolute children */
             border: 4px solid #333; 
             overflow: hidden; 
+            display: block;
         }
         
+        /* The Mercury Bar - Anchored to bottom */
         #mercuryBar { 
             position: absolute; 
             bottom: 0; 
+            left: 0;
             width: 100%; 
             background: linear-gradient(to top, var(--dark-blue), var(--brand-blue)); 
-            height: 0%; /* Initial state */
+            height: 0%; /* Initial state for transition */
             transition: height 2s cubic-bezier(0.17, 0.67, 0.83, 0.67); 
             display: flex; 
             align-items: flex-start; 
             justify-content: center;
+            z-index: 1;
         }
         
         .percentage-label { color: white; font-weight: bold; margin-top: 15px; font-size: 1.2rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.4); }
@@ -58,7 +63,7 @@
         <span id="targetDisplay" style="font-size: 1.1rem; font-weight: bold;">£0</span>
     </div>
 
-    <div id="lastUpdated" class="timestamp">Connecting to Livingston Cloud...</div>
+    <div id="lastUpdated" class="timestamp">Syncing Data...</div>
 </div>
 
 <script>
@@ -67,31 +72,35 @@
 
     async function fetchCloudData() {
         try {
+            // Passing the key in the header allows access to the private bin
             const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
                 headers: { 'X-Master-Key': API_KEY }
             });
             const resData = await response.json();
-            const data = resData.record;
-
-            const percentage = (data.actual / data.goal) * 100;
-            const visualHeight = Math.min(Math.max(percentage, 0), 100);
-
-            // Update text
-            document.getElementById('topTotal').innerText = '£' + data.actual.toLocaleString();
-            document.getElementById('targetDisplay').innerText = '£' + data.goal.toLocaleString();
-            document.getElementById('percentText').innerText = Math.round(percentage) + '%';
             
-            // Update bar height - REMOVED the reset to 0%
-            const bar = document.getElementById('mercuryBar');
-            bar.style.height = visualHeight + "%";
+            // Check if the record exists to avoid errors
+            if (resData.record) {
+                const data = resData.record;
+                const percentage = (data.actual / data.goal) * 100;
+                const visualHeight = Math.min(Math.max(percentage, 0), 100);
 
-            const now = new Date();
-            document.getElementById('lastUpdated').innerText = 'Last Updated: ' + now.toLocaleTimeString();
+                // Update UI elements
+                document.getElementById('topTotal').innerText = '£' + data.actual.toLocaleString();
+                document.getElementById('targetDisplay').innerText = '£' + data.goal.toLocaleString();
+                document.getElementById('percentText').innerText = Math.round(percentage) + '%';
+                
+                // Trigger transition by applying height directly
+                document.getElementById('mercuryBar').style.height = visualHeight + "%";
+
+                const now = new Date();
+                document.getElementById('lastUpdated').innerText = 'Last Updated: ' + now.toLocaleTimeString();
+            }
         } catch (error) { 
-            document.getElementById('lastUpdated').innerText = 'Sync Error - Retrying...';
+            document.getElementById('lastUpdated').innerText = 'Connection Error - Retrying...';
         }
     }
 
+    // Polling every 30 seconds
     setInterval(fetchCloudData, 30000);
     window.onload = () => setTimeout(fetchCloudData, 500);
 </script>
