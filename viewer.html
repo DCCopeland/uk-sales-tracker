@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <title>UK Livingston Sales Tracker</title>
+    <style>
+        :root { --brand-blue: #18b1f2; --dark-blue: #1965af; --bg-color: #f0f2f5; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); display: flex; justify-content: center; padding: 40px; margin: 0; }
+        .dashboard-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; width: 450px; }
+        .logo-container { width: 100%; max-width: 250px; margin: 0 auto 20px; }
+        .logo-container img { width: 100%; height: auto; }
+        h1 { margin: 10px 0 0; color: #333; font-size: 1.3rem; text-transform: uppercase; }
+        .thermometer-container { width: 85px; height: 400px; background: #ebebeb; margin: 30px auto 0; border-radius: 45px 45px 0 0; position: relative; border: 4px solid #333; overflow: hidden; }
+        .mercury-column { position: absolute; bottom: 0; width: 100%; background: linear-gradient(to top, var(--dark-blue), var(--brand-blue)); height: 0%; transition: height 1.5s ease-in-out; display: flex; align-items: flex-start; justify-content: center; }
+        .percentage-label { color: white; font-weight: bold; margin-top: 15px; font-size: 1.2rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.4); }
+        .bulb { width: 140px; height: 140px; background: var(--dark-blue); border-radius: 50%; margin: -70px auto 0; border: 4px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; position: relative; z-index: 2; }
+        .bulb .amount { font-size: 1.5rem; font-weight: bold; }
+        .bulb .label { font-size: 0.7rem; text-transform: uppercase; opacity: 0.8; }
+    </style>
+</head>
+<body>
+<div class="dashboard-card">
+    <div class="logo-container">
+        <img src="https://www.livingstonintl.com/assets/logo/livingston.svg" alt="Livingston Logo">
+    </div>
+    <h1>UK Livingston Sales Tracker</h1>
+    <div class="thermometer-container">
+        <div id="mercuryBar" class="mercury-column">
+            <span id="percentText" class="percentage-label">0%</span>
+        </div>
+    </div>
+    <div class="bulb">
+        <span class="label">Total Revenue</span>
+        <span id="totalDisplay" class="amount">£0</span>
+    </div>
+</div>
+
+<script>
+    function syncDisplay() {
+        const goal = parseFloat(localStorage.getItem('liv_goal')) || 100000;
+        const actual = parseFloat(localStorage.getItem('liv_actual')) || 0;
+        const percentage = (actual / goal) * 100;
+        
+        document.getElementById('mercuryBar').style.height = (percentage > 100 ? 100 : percentage) + '%';
+        document.getElementById('percentText').innerText = Math.round(percentage) + '%';
+        document.getElementById('totalDisplay').innerText = '£' + actual.toLocaleString();
+    }
+
+    // Listen for changes from the Controller page
+    window.addEventListener('storage', syncDisplay);
+    window.onload = syncDisplay;
+</script>
+</body>
+</html>
