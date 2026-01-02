@@ -2,14 +2,16 @@
 <html lang="en-GB">
 <head>
     <meta charset="UTF-8">
-    <title>Livingston UK Sales Controller</title>
+    <title>UK Livingston Sales Controller</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .admin-card { background: white; padding: 30px; border-radius: 10px; width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         h2 { margin-top: 0; font-size: 1.1rem; color: #333; border-bottom: 2px solid #18b1f2; padding-bottom: 10px; }
         input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; box-sizing: border-box; margin-bottom: 15px; font-size: 1rem; }
-        button { width: 100%; padding: 12px; background: #333; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        button { width: 100%; padding: 12px; background: #333; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; width: 100%; margin-bottom: 10px; }
         button:hover { background: #18b1f2; }
+        .view-btn { background: #f8f9fa; color: #333; border: 1px solid #ddd; }
+        .view-btn:hover { background: #eee; }
         .label { font-size: 0.7rem; font-weight: bold; color: #666; margin-bottom: 5px; display: block; }
     </style>
 </head>
@@ -28,19 +30,22 @@
     <input type="number" id="progressInput" placeholder="Enter Actual">
     
     <button id="btn" onclick="pushToCloud()">Push Update to Barometer</button>
+    <button class="view-btn" onclick="window.location.href='viewer.html'">View Tracker (No Update)</button>
+    
     <p id="msg" style="text-align:center; margin-top:10px; font-size: 0.8rem; font-weight: bold;"></p>
 </div>
 
 <script>
     const BIN_ID = '6957c521d0ea881f404f96e8';
     const API_KEY = '$2a$10$j8Whfk5hep5zzYAq.DC4tORoTu63AyetPpZUZn4OzHtbMFenOPFGa';
-    const SECRET_PASSWORD = 'L!viFC2o25'; // Your password
+    const SECRET_PASSWORD = 'L!viFC2o26'; // Set your password here
 
     async function pushToCloud() {
         const pass = document.getElementById('passInput').value;
         const goalVal = document.getElementById('goalInput').value;
         const actualVal = document.getElementById('progressInput').value;
         const msg = document.getElementById('msg');
+        const btn = document.getElementById('btn');
 
         if (pass !== SECRET_PASSWORD) {
             msg.innerText = "❌ Authentication Failed";
@@ -54,7 +59,36 @@
             return;
         }
 
-        document.getElementById('btn').innerText = "Updating Cloud...";
+        btn.innerText = "Updating Cloud...";
         
         const data = {
-            goal: parseFloat(
+            goal: parseFloat(goalVal),
+            actual: parseFloat(actualVal)
+        }; 
+
+        try {
+            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'X-Master-Key': API_KEY 
+                },
+                body: JSON.stringify(data)
+            });
+            
+            if(response.ok) {
+                msg.innerText = "✅ Success! Redirecting...";
+                msg.style.color = "green";
+                setTimeout(() => { window.location.href = 'viewer.html'; }, 2000); //
+            } else {
+                throw new Error('API Error');
+            }
+        } catch (e) {
+            msg.innerText = "❌ Sync Error: Check connection";
+            msg.style.color = "red";
+            btn.innerText = "Push Update to Barometer";
+        }
+    }
+</script>
+</body>
+</html>
