@@ -6,39 +6,65 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .admin-card { background: white; padding: 30px; border-radius: 10px; width: 350px; }
-        button { width: 100%; padding: 12px; background: #18b1f2; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        h2 { margin-top: 0; border-bottom: 2px solid #18b1f2; padding-bottom: 10px; }
         input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; box-sizing: border-box; margin-bottom: 15px; }
+        button { width: 100%; padding: 12px; background: #333; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        button:hover { background: #18b1f2; }
     </style>
 </head>
 <body>
 <div class="admin-card">
     <h2>UK Sales Controller</h2>
-    <input type="number" id="goalInput" placeholder="Target Goal">
-    <input type="number" id="progressInput" placeholder="Actual Sales">
+    <label style="font-size:0.7rem; font-weight:bold; color:#666;">AUTHORISATION PASSWORD</label>
+    <input type="password" id="passInput" placeholder="Enter Password">
+    
+    <hr style="margin-bottom:20px; border:0; border-top:1px solid #eee;">
+    
+    <label style="font-size:0.7rem; font-weight:bold; color:#666;">TARGET GOAL (£)</label>
+    <input type="number" id="goalInput">
+    
+    <label style="font-size:0.7rem; font-weight:bold; color:#666;">ACTUAL SALES (£)</label>
+    <input type="number" id="progressInput">
+    
     <button id="btn" onclick="pushToCloud()">Push to Office TV</button>
-    <p id="msg" style="text-align:center; color:green; display:none;">Updated!</p>
+    <p id="msg" style="text-align:center; margin-top:10px; font-weight:bold;"></p>
 </div>
 
 <script>
     const BIN_ID = '6957c521d0ea881f404f96e8';
     const API_KEY = '$2a$10$j8Whfk5hep5zzYAq.DC4tORoTu63AyetPpZUZn4OzHtbMFenOPFGa';
+    const SECRET_PASSWORD = 'L!vingst0nFC'; // CHANGE THIS TO YOUR DESIRED PASSWORD
 
     async function pushToCloud() {
+        const pass = document.getElementById('passInput').value;
+        const msg = document.getElementById('msg');
         const btn = document.getElementById('btn');
+
+        if (pass !== SECRET_PASSWORD) {
+            msg.innerText = "❌ Incorrect Password";
+            msg.style.color = "red";
+            return;
+        }
+
         btn.innerText = "Syncing...";
         const data = {
             goal: parseFloat(document.getElementById('goalInput').value),
             actual: parseFloat(document.getElementById('progressInput').value)
         };
 
-        await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-            body: JSON.stringify(data)
-        });
-
-        btn.innerText = "Push to Office TV";
-        document.getElementById('msg').style.display = 'block';
+        try {
+            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+                body: JSON.stringify(data)
+            });
+            msg.innerText = "✅ Barometer Updated Successfully!";
+            msg.style.color = "green";
+        } catch (e) {
+            msg.innerText = "❌ Connection Error";
+            msg.style.color = "red";
+        }
+        btn.innerText = "Push to Sales Barometer";
     }
 </script>
 </body>
