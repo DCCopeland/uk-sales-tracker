@@ -5,61 +5,62 @@
     <title>UK Livingston Sales Tracker</title>
     <style>
         :root { --brand-blue: #18b1f2; --dark-blue: #1965af; --bg-color: #f0f2f5; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); display: flex; justify-content: center; padding: 20px; margin: 0; }
-        .dashboard-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; width: 450px; position: relative; }
-        .logo-container { width: 100%; max-width: 250px; margin: 0 auto 10px; }
-        .logo-container img { width: 100%; height: auto; }
-        h1 { margin: 5px 0; color: #333; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); display: flex; justify-content: center; padding: 20px; margin: 0; height: 100vh; }
+        .dashboard-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; width: 450px; }
         
         .top-total { font-size: 2.8rem; font-weight: bold; color: var(--dark-blue); margin: 15px 0 5px; }
-        .top-label { font-size: 0.8rem; text-transform: uppercase; color: #666; margin-bottom: 25px; letter-spacing: 1px; }
+        .top-label { font-size: 0.8rem; text-transform: uppercase; color: #666; margin-bottom: 25px; }
 
-        /* The Barometer Outer Shell */
-        .thermometer-container { width: 85px; height: 380px; background: #ebebeb; margin: 0 auto; border-radius: 45px 45px 0 0; position: relative; border: 4px solid #333; overflow: hidden; }
+        /* Outer container MUST have a fixed height for % children to work */
+        .thermometer-container { 
+            width: 85px; 
+            height: 380px; /* Fixed height is mandatory here */
+            background: #ebebeb; 
+            margin: 0 auto; 
+            border-radius: 45px 45px 0 0; 
+            position: relative; 
+            border: 4px solid #333; 
+            overflow: hidden; 
+        }
         
-        /* The Actual Level Bar */
+        /* The Mercury Bar */
         #mercuryBar { 
             position: absolute; 
             bottom: 0; 
             width: 100%; 
             background: linear-gradient(to top, var(--dark-blue), var(--brand-blue)); 
-            height: 0%; /* Base starting point */
-            transition: height 2s cubic-bezier(0.17, 0.67, 0.83, 0.67); 
+            height: 0%; /* Start at zero */
+            transition: height 2s cubic-bezier(0.17, 0.67, 0.83, 0.67); /* Smooth rising effect */
             display: flex; 
             align-items: flex-start; 
             justify-content: center;
-            border-top: 2px solid rgba(255,255,255,0.5); /* Helps visibility */
         }
         
-        .percentage-label { color: white; font-weight: bold; margin-top: 15px; font-size: 1.2rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.4); white-space: nowrap; }
+        .percentage-label { color: white; font-weight: bold; margin-top: 15px; font-size: 1.2rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.4); }
         .bulb { width: 140px; height: 140px; background: var(--dark-blue); border-radius: 50%; margin: -70px auto 0; border: 4px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; position: relative; z-index: 2; }
-        .bulb .target-text { font-size: 1.1rem; font-weight: bold; }
-        .bulb .label { font-size: 0.6rem; text-transform: uppercase; opacity: 0.8; }
-
         .timestamp { margin-top: 25px; font-size: 0.7rem; color: #999; font-style: italic; border-top: 1px solid #eee; padding-top: 10px; }
     </style>
 </head>
 <body>
 <div class="dashboard-card">
-    <div class="logo-container">
-        <img src="https://www.livingstonintl.com/assets/logo/livingston.svg" alt="Livingston Logo">
-    </div>
+    <img src="https://www.livingstonintl.com/assets/logo/livingston.svg" style="width:250px; margin-bottom:10px;">
     <h1>UK Livingston Sales Tracker</h1>
     
     <div id="topTotal" class="top-total">£0</div>
-    <div class="top-label">Total Revenue Achieved 2026</div>
+    <div class="top-label">Total Revenue Achieved</div>
 
     <div class="thermometer-container">
         <div id="mercuryBar">
             <span id="percentText" class="percentage-label">0%</span>
         </div>
     </div>
+    
     <div class="bulb">
-        <span class="label">Target Goal</span>
-        <span id="targetDisplay" class="target-text">£0</span>
+        <span style="font-size: 0.6rem; text-transform: uppercase; opacity: 0.8;">Target Goal</span>
+        <span id="targetDisplay" style="font-size: 1.1rem; font-weight: bold;">£0</span>
     </div>
 
-    <div id="lastUpdated" class="timestamp">Syncing with Livingston Cloud...</div>
+    <div id="lastUpdated" class="timestamp">Connecting to Livingston Cloud</div>
 </div>
 
 <script>
@@ -75,37 +76,29 @@
             const data = resData.record;
 
             const percentage = (data.actual / data.goal) * 100;
-            const visualHeight = percentage > 100 ? 100 : (percentage < 0 ? 0 : percentage);
+            const visualHeight = Math.min(Math.max(percentage, 0), 100);
 
-            // Update Numeric Text
+            // Update text first
             document.getElementById('topTotal').innerText = '£' + data.actual.toLocaleString();
             document.getElementById('targetDisplay').innerText = '£' + data.goal.toLocaleString();
             document.getElementById('percentText').innerText = Math.round(percentage) + '%';
             
-            // Force the Barometer Update
+            // Apply height with a tiny delay to ensure transition triggers
             const bar = document.getElementById('mercuryBar');
-            bar.style.height = '0%'; // Reset first
+            bar.style.height = "0%"; // Reset
             setTimeout(() => {
-                bar.style.height = visualHeight + '%'; // Then move to target
+                bar.style.height = visualHeight + "%"; // Set new height
             }, 100);
 
-            // Update Timestamp
             const now = new Date();
-            document.getElementById('lastUpdated').innerText = 'Last Updated: ' + now.toLocaleDateString() + ' at ' + now.toLocaleTimeString();
-            
+            document.getElementById('lastUpdated').innerText = 'Last Updated: ' + now.toLocaleTimeString();
         } catch (error) { 
-            console.error('Error fetching data:', error);
-            document.getElementById('lastUpdated').innerText = 'Connection Error - Retrying...';
+            document.getElementById('lastUpdated').innerText = 'Sync Error - Retrying...';
         }
     }
 
-    // Refresh every 30 seconds
     setInterval(fetchCloudData, 30000);
-    
-    // Kickstart on load
-    window.onload = function() {
-        fetchCloudData();
-    };
+    window.onload = () => setTimeout(fetchCloudData, 500);
 </script>
 </body>
 </html>
