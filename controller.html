@@ -37,40 +37,47 @@
     const SECRET_PASSWORD = 'L!vingst0nFC'; // Set your password here
 
     async function pushToCloud() {
-        const pass = document.getElementById('passInput').value;
-        const msg = document.getElementById('msg');
-        const btn = document.getElementById('btn');
+    const pass = document.getElementById('passInput').value;
+    const msg = document.getElementById('msg');
+    const btn = document.getElementById('btn');
 
-        if (pass !== SECRET_PASSWORD) {
-            msg.innerText = "❌ Authentication Failed";
-            msg.style.color = "red";
-            return;
-        }
-
-        btn.innerText = "Updating Cloud...";
-        const data = {
-            goal: parseFloat(document.getElementById('goalInput').value),
-            actual: parseFloat(document.getElementById('progressInput').value)
-        };
-
-        try {
-            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-                body: JSON.stringify(data)
-            });
-            if(response.ok) {
-                msg.innerText = "✅ Successfully Pushed to UK Sales Barometer";
-                msg.style.color = "green";
-            } else {
-                throw new Error('API Error');
-            }
-        } catch (e) {
-            msg.innerText = "❌ Sync Error: Check API Keys";
-            msg.style.color = "red";
-        }
-        btn.innerText = "Push Update to UK Sales Barometer";
+    if (pass !== SECRET_PASSWORD) {
+        msg.innerText = "❌ Authentication Failed";
+        msg.style.color = "red";
+        return;
     }
+
+    btn.innerText = "Updating Cloud...";
+    const data = {
+        goal: parseFloat(document.getElementById('goalInput').value),
+        actual: parseFloat(document.getElementById('progressInput').value)
+    };
+
+    try {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+            body: JSON.stringify(data)
+        });
+        
+        if(response.ok) {
+            msg.innerText = "✅ Success! Redirecting to Tracker...";
+            msg.style.color = "green";
+            
+            // Redirect to the viewer page after 2 seconds
+            setTimeout(() => {
+                window.location.href = 'viewer.html'; 
+            }, 2000);
+            
+        } else {
+            throw new Error('API Error');
+        }
+    } catch (e) {
+        msg.innerText = "❌ Sync Error: Check API Keys";
+        msg.style.color = "red";
+        btn.innerText = "Push Update to Barometer";
+    }
+}
 </script>
 </body>
 </html>
